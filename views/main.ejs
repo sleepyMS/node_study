@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= locals.title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com">
+    <link href="https://fonts.googleapis.com/css2?family=Comforter&family=Jua&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/public/main.css">
+    <!-- <link rel="stylesheet" href="./main.js"> -->
+
+
+</head>
+
+<body>
+    <nav class="navbar bg-dark border-bottom border-body" data-bs-theme="dark"">
+        <div class="container-fluid">
+        <a class="navbar-brand" href="https://me-in-journey.com/" target="_blank">
+            <img src="/public/img/icon/logo.png" alt="Logo" width="30" height="24" class="d-inline-block align-text-top">
+            me-in-journey
+        </a>
+        </div>
+    </nav>
+
+    <div class="container">
+        <div class="card text-center top-card">
+            <h2>Bootstrap을 통한 영화 리뷰 사이트</h2>
+            <div class="card-body">
+                <h5 class="card-title">Special title treatment</h5>
+                <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
+                <a href="#" class="btn btn-danger">Go somewhere</a>
+            </div>
+            <div class="card-footer text-body-secondary">
+                API를 통한 리뷰 저장
+            </div>
+        </div>
+
+        <div class="row row-cols-1 row-cols-md-3 g-4" id="movie-list">
+            <!-- <div class="col">
+                <div class="card h-100">
+                    <img src="..." class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">Card title</h5>
+                        <p class="card-text">This is a longer card with supporting text below as a natural lead-in to
+                            additional content. This content is a little bit longer.</p>
+                        <button type="button" class="btn btn-success review-botton" onclick="review(id)">Success</button>
+                    </div>
+                </div>
+            </div> -->
+        </div>
+
+    </div>
+
+    <div class="modal" id="review-modal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">후기</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="modal-body">
+                    <p>Modal text goes here.</p>
+                </div>
+                <div class="modal-footer">
+                    <input type="text" class="form-control" id="review">
+                    <button type="button" class="btn btn-primary" onclick="addReview()">후기 작성</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.8/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.1/dist/js/bootstrap.min.js"></script>
+
+    <script>
+        var target_id = 0;
+
+        $(document).ready(function () {
+            console.log("start");
+
+            $.ajax({
+                url: "https://api.themoviedb.org/3/movie/popular?api_key=10923b261ba94d897ac6b81148314a3f&page=1",
+                data: {},
+                type: "GET",
+                success: function (json) {
+                    $('#movie-list').html('');
+                    console.log(json);
+
+                    var movie_list = json.results;
+
+                    for (var i = 0; i < movie_list.length; i++) {
+                        var movie_card = `<div class="col">
+                                            <div class="card h-100">
+                                                <img src="${'https://image.tmdb.org/t/p/w500/' + movie_list[i].poster_path}" class="card-img-top" alt="...">
+                                                <div class="card-body">
+                                                    <h5 class="card-title">${movie_list[i].original_title}</h5>
+                                                    <button type="button" class="btn btn-success review-botton" onclick="review(${movie_list[i].id})">Success</button>
+                                                </div>
+                                            </div>
+                                        </div>`;
+                        $('#movie-list').append(movie_card);
+                    }
+                },
+                error: function (err) {
+
+                }
+            })
+        })
+
+
+        function review(id) {
+            target_id = id;
+
+            $.ajax({
+                url: `/me-in-sk/review/read?movie_id=${id}`,
+                data: {},
+                type: "GET",
+                success: function(json) {
+                    $('#modal-body').html('');
+                    console.log(json);
+
+                    var reviews = json.data;
+
+                    for (var i = 0; i < reviews.length; i++) {
+                        $('#modal-body').append(`<p>${reviews[i].review}</p>`)
+                    }
+
+                },
+                error: function (err) {
+                }
+            })
+
+
+            $('#review-modal').modal('show');
+        }
+
+
+        function addReview(){
+            var review = $('#review').val();
+            var review_html = `<p>${review}</p>`;
+
+
+            $.ajax({
+                url: `/me-in-sk/review/create`,
+                data: {
+                    movie_id: target_id,
+                    review: review
+                },
+                type: "POST",
+                success: function (json) {
+                    console.log(json);
+
+                    if (json.success == 200){
+                        console.log("success_review")
+                    } else if (json.success == 400){
+                        alert("리뷰 형식이 올바르지 않습니다.")
+                    }
+                },
+                error: function (err) {
+
+                }
+            })
+
+            $('#modal-body').append(review_html);
+            $('#review').val('');
+        }
+
+
+
+
+    </script>
+
+</body>
+
+</html>

@@ -5,8 +5,7 @@ const db = require('../model/db');
 // 데이터를 전달할 때 : send()
 // 그림파일을 전달할 때 : render()
 
-
-// 기본 베이스 정리
+// ################# 기본 베이스 정리 #################
 /*
 ################ get API ###################
 router.get("/", function(req, res){
@@ -41,8 +40,7 @@ router.get("/", function(req, res){
 })
 */
 
-
-// CRUD 정리
+// #################### CRUD 정리 ####################
 /*
 router.get("/data/create", function(req, res){
     var user_id = parseInt(Math.random() * 10000)
@@ -74,10 +72,32 @@ router.post("/data/delete", function(req, res){
 
 
 router.get("/", function(req, res){
-    res.render('index.ejs', {title: "main page"});
+    res.render('main', {title: "누구나 만드는 영화 리뷰 사이트"});
 })
 
+router.post("/review/create", function(req, res){
+    var movie_id = req.body.movie_id;
+    var review = req.body.review;
 
+    if (movie_id == '' || movie_id == 0 || review == ''){
+        res.send({success: 400});
+    } else{
+        db.reviews.create({
+            movie_id: movie_id,
+            review: review
+        }).then(function(result){
+            res.send({success: 200});
+        })
+    }
+})
+
+router.get("/review/read", function(req, res){
+    var movie_id = req.query.movie_id;
+
+    db.reviews.findAll({where: {movie_id:movie_id}}).then(function(result){
+        res.send({succeess: 200, data: result});
+    })
+})
 
 
 

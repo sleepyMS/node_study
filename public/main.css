@@ -1,3 +1,21 @@
-h1 {
-    color: blue;
+* {
+    font-family: 'Comforter', cursive;
+    font-family: 'Jua', sans-serif;
+}
+
+body {
+    background-color: #333;
+}
+
+.top-card {
+    margin-top: 30px;
+    margin-bottom: 30px;
+}
+
+.review-botton {
+    width: 100%;
+}
+
+.form-control {
+    width: 70%;
 }
